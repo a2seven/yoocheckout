@@ -1,0 +1,353 @@
+# Yoo.Checkout API SDK (unofficial)
+
+[![N|Solid](https://i.ibb.co/my3rNCm/logo1.png)](https://a2seven.com/)
+
+[Yoo.Checkout](https://yookassa.ru/) - a universal solution for working with online payments. The Yoo.Checkout API is built on REST-principles, works with real objects and has predictable behavior. Using this API, you can send payment requests, save payment information for repeated charges (and include auto payments), make refunds and much more.
+The API uses HTTP as the main protocol, which means it is suitable for development in any programming language that can work with HTTP libraries (for example, cURL). Authentication uses Basic Auth, so you can make your first request directly from the browser.
+The API supports POST and GET requests. POST requests use JSON arguments, GET requests work with query strings. The API always returns a response in JSON format, regardless of the type of request.
+
+## Authentication
+
+To authenticate requests you need to use HTTP Basic Auth. In the headers of the requests as a user name you need to pass the ID of your store in YooKassa, as a password - your secret key (it must be generated and activated by the password from the sms)
+
+Example request with authentication
+```
+curl https://api.yookassa.ru/v3/payments/{payment_id} \
+  -u <shopId>:<secretKey>
+```
+
+## Idempotency
+In API context, idempotency means that multiple requests are handled the same way as a single request.
+It means that if you receive a repeated request with the same parameters, you will get the result of the original request in your response.
+This behavior helps to avoid undesirable repetition of transactions. For example, if there is a problem with the network and the connection is broken while making a payment, you can safely repeat the request as many times as you want.
+GET requests are idempotent by default because they have no undesirable consequences.
+The Idempotence-Key header (or idempotence key) is used to ensure the idempotency of POST requests.
+
+Example of a query with an idempotent key
+```
+curl https://api.yookassa.ru/v3/refunds \
+  -X POST \
+  -u <shopId>:<secretKey> \
+  -H 'Idempotence-Key: <Idempotency key>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "amount": {
+          "value": "2.00",
+          "currency": "RUB"
+        },
+        "payment_id": "215d8da0-000f-50be-b000-0003308c89be"
+      }'
+```
+If you repeat a request with the same data and the same key, the API processes it as a repeat request. If the data in the request is the same and the idempotence key is different, the request is executed as a new one.
+You can pass any value unique to that operation on your side in the Idempotence-Key header. We recommend using a V4 UUID.
+YooKassa provides idempotence for 24 hours after the first request, then a second request will be processed as a new one.
+
+## Synchronicity
+YooKassa processes the received request immediately and returns the result of processing ("success" or "failure").
+If an exact response cannot be given within 30 seconds, e.g. due to a problem on the acquirer's side, YooKassa will return HTTP code 500 and try to cancel the operation.
+To find out the final result of the request, repeat the request with the same data and the same idempotent key. The recommended frequency of repetitions is once per minute, until YooKassa reports a response other than HTTP 500.
+
+## HTTP response codes
+If the request is processed successfully, the API will return the HTTP code 200 and the response body.
+If an error occurs during processing, API will return the error object and standard HTTP code.
+
+| HTTP CODE | ERROR CODE | DESCRIPTION |
+| ------ | ------ | ------ |
+| 400 | invalid_request, not_supported | Incorrect request. Most often this status is issued due to a violation of the rules of interaction with the API. | 
+| 401 | invalid_credentials | [Basic Auth] Your YooKassa account ID or secret key (authentication username and password) is invalid. [OAuth 2.0] Invalid OAuth token: it is invalid, out of date, or has been revoked. Request the token again. |
+| 403 | forbidden | The secret key or OAuth token is correct, but lacks permissions to complete the transaction. |
+| 404 | not_found | Resource not found. | 
+| 429 | too_many_requests | The limit of requests per time unit has been exceeded. Try reducing the intensity of the requests. | 
+| 500 | internal_server_error | Technical problems on the side of UKasa. The result of the request processing is unknown. Repeat the request later with the same idempotency key. It is recommended to repeat the request at intervals of once a minute until YooKassa reports the result of operation processing. |
+
+Example error response body
+```
+  {
+    "type": "error",
+    "id": "ab5a11cd-13cc-4e33-af8b-75a74e18dd09",
+    "code": "invalid_request",
+    "description": "Idempotence key duplicated",
+    "parameter": "Idempotence-Key"
+  }
+```
+SDK Error Response
+```
+ErrorResponse {
+    "type": "error",
+    "id": "ab5a11cd-13cc-4e33-af8b-75a74e18dd09",
+    "code": "invalid_request",
+    "description": "Idempotence key duplicated",
+    "parameter": "Idempotence-Key"
+    "errorCode": 401
+}
+```
+## Reference
+[YooKassa API page](https://yookassa.ru/developers/api#intro)
+## Installation
+```bash
+npm install yoo-checkout
+```
+## Getting started
+### TypeScript
+ 
+```typescript
+import { YooCheckout } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
+```
+
+### JavaScript
+```javascript
+const { YooCheckout } = require('you-checkout');
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
+```
+
+## Docs
+#### Create payment
+
+```typescript
+import { YooCheckout, ICreatePayment } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
+
+const idempotenceKey = '02347fc4-a1f0-49db-807e-f0d67c2ed5a5';
+
+const createPayload: ICreatePayment = {
+    amount: {
+        value: '2.00',
+        currency: 'RUB'
+    },
+    payment_method_data: {
+        type: 'bank_card'
+    },
+    confirmation: {
+        type: 'redirect',
+        return_url: 'test'
+    }
+};
+
+try {
+    const paymnet = await checkout.createPayment(createPayload, idempotenceKey);
+    console.log(payment)
+} catch (error) {
+     console.error(err);
+}
+```
+### Get payment
+
+```typescript
+import { YooCheckout } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
+
+const paymentId = '21966b95-000f-50bf-b000-0d78983bb5bc';
+
+try {
+    const paymnet = await checkout.getPayment(paymentId);
+    console.log(payment)
+} catch (error) {
+     console.error(err);
+}
+```
+### Capture payment
+```typescript
+import { YooCheckout, ICapturePayment } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
+
+const paymentId = '21966b95-000f-50bf-b000-0d78983bb5bc';
+
+const idempotenceKey = '02347fc4-a1f0-49db-807e-f0d67c2ed5a5';
+
+const capturePayload: ICapturePayment = {
+    amount: {
+        value: '2.00',
+        currency: 'RUB'
+    }
+};
+
+try {
+    const paymnet = await checkout.capturePayment(paymentId, capturePayload, idempotenceKey);
+    console.log(payment)
+} catch (error) {
+     console.error(err);
+}
+```
+ 
+### Cancel payment
+```typescript
+import { YooCheckout } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
+
+const paymentId = '21966b95-000f-50bf-b000-0d78983bb5bc';
+
+const idempotenceKey = '02347fc4-a1f0-49db-807e-f0d67c2ed5a5';
+
+try {
+    const paymnet = await checkout.cancelPayment(paymentId, idempotenceKey);
+    console.log(payment)
+} catch (error) {
+     console.error(err);
+}
+```
+### Get payment list
+```typescript
+import { YooCheckout, IGetPaymentList } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
+
+const filters: IGetPaymentList = { created_at: { value: '2021-01-27T13:58:02.977Z', mode: 'gte' },  limit: 20 };
+
+try {
+    const paymnetList = await checkout.getPaymentList(filters);
+    console.log(paymnetList)
+} catch (error) {
+     console.error(err);
+}
+```
+### Create refund
+```typescript
+import { YooCheckout, ICreateRefund } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
+
+const idempotenceKey = '02347fc4-a1f0-49db-807e-f0d67c2ed5a5';
+
+const createRefundPayload: ICreateRefund = {
+    payment_id: '27a3852a-000f-5000-8000-102d922df8db',
+    amount: {
+        value: '1.00',
+        currency: 'RUB'
+    }
+};
+
+try {
+    const refund = await checkout.createRefund(createRefundPayload, idempotenceKey);
+    console.log(refund)
+} catch (error) {
+     console.error(err);
+}
+```
+
+### Get refund
+```typescript
+import { YooCheckout } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
+
+const refundId = '21966b95-000f-50bf-b000-0d78983bb5bc';
+
+try {
+    const refund = await checkout.getRefund(refundId);
+    console.log(refund)
+} catch (error) {
+     console.error(err);
+}
+```
+
+### Get refund list
+```typescript
+import { YooCheckout, IGetRefundList } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
+
+const filters: IGetRefundList = { created_at: { value: '2021-01-27T13:58:02.977Z', mode: 'gte' },  limit: 20 };
+
+try {
+    const refundList = await checkout.getRefundList(filters);
+    console.log(refundList)
+} catch (error) {
+     console.error(err);
+}
+```
+
+### Create receipt
+```typescript
+import { YooCheckout, ICreateReceipt } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
+
+const idempotenceKey = '02347fc4-a1f0-49db-807e-f0d67c2ed5a5';
+
+const createReceiptPayload: ICreateReceipt = {
+    send: true,
+    customer: {
+        email: 'test@gmail.com'
+    },
+    settlements: [
+        {
+            type: 'cashless',
+            amount: {
+                value: '2.00',
+                currency: 'RUB'
+            }
+        }
+    ],
+    refund_id: '27a387af-0015-5000-8000-137da144ce29',
+    type: 'refund',
+    items: [
+        {
+            description: 'test',
+            quantity: '2',
+            amount: {
+                value: '1.00',
+                currency: 'RUB'
+            },
+            vat_code: 1,
+        }
+    ]
+};
+
+try {
+    const receipt = await checkout.createReceipt(createReceiptPayload, idempotenceKey);
+    console.log(receipt)
+} catch (error) {
+     console.error(err);
+}
+```
+
+### Get receipt
+```typescript
+import { YooCheckout } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
+
+const receiptId = '21966b95-000f-50bf-b000-0d78983bb5bc';
+
+try {
+    const receipt = await checkout.getReceipt(receiptId);
+    console.log(receipt)
+} catch (error) {
+     console.error(err);
+}
+```
+
+### Get receipt list
+```typescript
+import { YooCheckout, IGetReceiptList } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
+
+const filters: IGetReceiptList = { created_at: { value: '2021-01-27T13:58:02.977Z', mode: 'gte' },  limit: 20 };
+
+try {
+    const receiptist = await checkout.getReceiptList(filters);
+    console.log(receiptist)
+} catch (error) {
+     console.error(err);
+}
+```
+
+## Running Tests
+
+To install the development dependencies (run where the package.json is):
+```bash
+$ npm install
+```
+
+Run the tests:
+```bash
+$ npm run test:unit
+```

@@ -1,0 +1,1 @@
+export const apiUrl = 'https://api.yookassa.ru/v3';
