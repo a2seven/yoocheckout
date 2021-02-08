@@ -1,5 +1,4 @@
-import { ICreatePayment, ICreateReceipt, ICreateRefund } from '../lib/types';
-import { v4 as uuid } from 'uuid';
+import { ICreatePayment, ICreateReceipt, ICreateRefund, ICreateWebHook } from '../lib/types';
 
 export const createPaymentData: ICreatePayment = {
     amount: {
@@ -95,46 +94,13 @@ export const cancelPaymentResponse = {
 export const getPaymentListResponse = {
     type: 'list',
     items: [
-        {
-            id: '22e12f66-000f-5000-8000-18db351245c7',
-            status: 'waiting_for_capture',
-            paid: true,
-            amount: {
-                value: '2.00',
-                currency: 'RUB'
-            },
-            created_at: '2018-07-18T10:51:18.139Z',
-            description: 'Заказ №72',
-            expires_at: '2018-07-25T10:52:00.233Z',
-            metadata: {},
-            payment_method: {
-                type: 'bank_card',
-                id: '22e12f66-000f-5000-8000-18db351245c7',
-                saved: false,
-                card: {
-                    first6: '555555',
-                    last4: '4444',
-                    expiry_month: '07',
-                    expiry_year: '2022',
-                    card_type: 'MasterCard',
-                    issuer_country: 'RU',
-                    issuer_name: 'Sberbank'
-                },
-                title: 'Bank card *4444'
-            },
-            recipient: {
-                account_id: '100001',
-                gateway_id: '1000001'
-            },
-            refundable: false,
-            test: false
-        }
+      createPaymentResponse
     ],
     next_cursor: '37a5c87d-3984-51e8-a7f3-8de646d39ec15'
 };
 
 export const createRefundData: ICreateRefund = {
-    payment_id: uuid(),
+    payment_id: '219752e2-000f-50bf-b000-03f3dda898c8',
     amount: {
         value: '2.00',
         currency: 'RUB'
@@ -142,7 +108,7 @@ export const createRefundData: ICreateRefund = {
 };
 
 export const createAndGetRefundResponse = {
-    id: '219752f7-0016-50be-b000-078d43a63ae4',
+    id: '219752e2-000f-50bf-b000-03f3dda898c8',
     status: 'succeeded',
     amount: {
         value: '1',
@@ -156,23 +122,14 @@ export const createAndGetRefundResponse = {
 export const getRefundListResponse = {
     type: 'list',
     items: [
-        {
-            id: '216749f7-0016-50be-b000-078d43a63ae4',
-            status: 'succeeded',
-            amount: {
-                value: '1',
-                currency: 'RUB'
-            },
-            created_at: '2017-10-04T19:27:51.407Z',
-            payment_id: '216749da-000f-50be-b000-096747fad91e'
-        }
+        createAndGetRefundResponse
     ],
     next_cursor: '416746f8-0016-50be-b000-078d43a4578'
 };
 
 export const createReceiptData: ICreateReceipt = {
     type: 'refund',
-    refund_id: uuid(),
+    refund_id: '219752e2-000f-50bf-b000-03f3dda898c8',
     customer: {
         email: 'test@gmail.com'
     },
@@ -237,7 +194,7 @@ export const getReceiptResponse = {
     id: 'rt-2da5c87d-0384-50e8-a7f3-8d5646dd9e10',
     type: 'payment',
     status: 'succeeded',
-    payment_id: '225d8da0-000f-50be-b000-0003308c89be',
+    payment_id: '219752e2-000f-50bf-b000-03f3dda898c8',
     fiscal_document_number: '3997',
     fiscal_storage_number: '9288000100115786',
     fiscal_attribute: '2617603922',
@@ -271,31 +228,35 @@ export const getReceiptResponse = {
 export const getReceiptListResponse = {
     type: 'list',
     items: [
-        {
-            id: 'rt_1da5c87d-0984-50e8-a7f3-8de646dd9ec9',
-            type: 'payment',
-            payment_id: '215d8da0-000f-50be-b000-0003308c89be',
-            status: 'succeeded',
-            fiscal_document_number: '3986',
-            fiscal_storage_number: '9288000100115785',
-            fiscal_attribute: '2617603921',
-            registered_at: '2019-05-13T17:56:00.000+03:00',
-            fiscal_provider_id: 'fd9e9404-eaca-4000-8ec9-dc228ead2345',
-            items: [
-                {
-                    description: 'Сapybara',
-                    quantity: '5.000',
-                    amount: {
-                        value: '2500.50',
-                        currency: 'RUB'
-                    },
-                    vat_code: 2,
-                    payment_mode: 'full_payment',
-                    payment_subject: 'commodity'
-                }
-            ],
-            tax_system_code: 1
-        }
+        createReceiptResponse
     ],
     next_cursor: 'rt_67a4g56e-8487-56d4-a7f3-7yu646s78ec48'
 };
+
+
+export const createWebHookData: ICreateWebHook = {
+    event: 'payment.canceled',
+    url: 'test'
+};
+
+export const createWebHookResponse = {
+    id: 'wh-edba6d49-ce3e-4d99-991b-4bb164859dc3',
+    event: 'payment.canceled',
+    url: 'test'
+};
+
+export const getWebhookListResponse = {
+    type: 'list',
+    items: [
+       createWebHookResponse
+    ],
+    next_cursor: 'rt_67a4g56e-8487-56d4-a7f3-7yu646s78ec48'
+};
+
+export const getShopInfoResponse = {
+    account_id: '1234',
+    test: true,
+    fiscalization_enabled: false,
+    payment_methods: [ 'yoo_money', 'bank_card' ],
+    status: 'enabled'
+}

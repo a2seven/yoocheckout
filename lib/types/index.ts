@@ -37,6 +37,8 @@ export * from './IGetRefundList';
 export * from './IRefundList';
 export * from './IGetReceiptList';
 export * from './IReceiptList';
+export * from './ICreateWebHook';
+export * from './IWebHookList';
 
 
 

@@ -11,7 +11,7 @@ The API supports POST and GET requests. POST requests use JSON arguments, GET re
 To authenticate requests you need to use HTTP Basic Auth. In the headers of the requests as a user name you need to pass the ID of your store in YooKassa, as a password - your secret key (it must be generated and activated by the password from the sms)
 
 Example request with authentication
-```
+```bash
 curl https://api.yookassa.ru/v3/payments/{payment_id} \
   -u <shopId>:<secretKey>
 ```
@@ -24,7 +24,7 @@ GET requests are idempotent by default because they have no undesirable conseque
 The Idempotence-Key header (or idempotence key) is used to ensure the idempotency of POST requests.
 
 Example of a query with an idempotent key
-```
+```bash
 curl https://api.yookassa.ru/v3/refunds \
   -X POST \
   -u <shopId>:<secretKey> \
@@ -61,7 +61,7 @@ If an error occurs during processing, API will return the error object and stand
 | 500 | internal_server_error | Technical problems on the side of UKasa. The result of the request processing is unknown. Repeat the request later with the same idempotency key. It is recommended to repeat the request at intervals of once a minute until YooKassa reports the result of operation processing. |
 
 Example error response body
-```
+```javascript
   {
     "type": "error",
     "id": "ab5a11cd-13cc-4e33-af8b-75a74e18dd09",
@@ -71,7 +71,7 @@ Example error response body
   }
 ```
 SDK Error Response
-```
+```javascript
 ErrorResponse {
     "type": "error",
     "id": "ab5a11cd-13cc-4e33-af8b-75a74e18dd09",
@@ -88,26 +88,18 @@ ErrorResponse {
 npm install yoo-checkout
 ```
 ## Getting started
-### TypeScript
  
-```typescript
-import { YooCheckout } from 'yoo-checkout';
-
-const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
-```
-
-### JavaScript
 ```javascript
-const { YooCheckout } = require('you-checkout');
+import { YooCheckout } from 'yoo-checkout'; // OR const { YooCheckout } = require('you-checkout');
 
 const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
 ```
 
 ## Docs
-#### Create payment
+### [Create payment](https://yookassa.ru/developers/api#create_payment)
 
-```typescript
-import { YooCheckout, ICreatePayment } from 'yoo-checkout';
+```javascript
+import { YooCheckout, ICreatePayment  } from 'yoo-checkout';
 
 const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
 
@@ -128,15 +120,15 @@ const createPayload: ICreatePayment = {
 };
 
 try {
-    const paymnet = await checkout.createPayment(createPayload, idempotenceKey);
+    const payment = await checkout.createPayment(createPayload, idempotenceKey);
     console.log(payment)
 } catch (error) {
      console.error(err);
 }
 ```
-### Get payment
+### [Get payment](https://yookassa.ru/developers/api#get_payment)
 
-```typescript
+```javascript
 import { YooCheckout } from 'yoo-checkout';
 
 const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
@@ -144,14 +136,14 @@ const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secre
 const paymentId = '21966b95-000f-50bf-b000-0d78983bb5bc';
 
 try {
-    const paymnet = await checkout.getPayment(paymentId);
+    const payment = await checkout.getPayment(paymentId);
     console.log(payment)
 } catch (error) {
      console.error(err);
 }
 ```
-### Capture payment
-```typescript
+### [Capture payment](https://yookassa.ru/developers/api#capture_payment)
+```javascript
 import { YooCheckout, ICapturePayment } from 'yoo-checkout';
 
 const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
@@ -168,15 +160,15 @@ const capturePayload: ICapturePayment = {
 };
 
 try {
-    const paymnet = await checkout.capturePayment(paymentId, capturePayload, idempotenceKey);
+    const payment = await checkout.capturePayment(paymentId, capturePayload, idempotenceKey);
     console.log(payment)
 } catch (error) {
      console.error(err);
 }
 ```
  
-### Cancel payment
-```typescript
+### [Cancel payment](https://yookassa.ru/developers/api#cancel_payment)
+```javascript
 import { YooCheckout } from 'yoo-checkout';
 
 const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
@@ -186,14 +178,14 @@ const paymentId = '21966b95-000f-50bf-b000-0d78983bb5bc';
 const idempotenceKey = '02347fc4-a1f0-49db-807e-f0d67c2ed5a5';
 
 try {
-    const paymnet = await checkout.cancelPayment(paymentId, idempotenceKey);
+    const payment = await checkout.cancelPayment(paymentId, idempotenceKey);
     console.log(payment)
 } catch (error) {
      console.error(err);
 }
 ```
-### Get payment list
-```typescript
+### [Get payment list](https://yookassa.ru/developers/api#get_payments_list)
+```javascript
 import { YooCheckout, IGetPaymentList } from 'yoo-checkout';
 
 const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
@@ -201,14 +193,14 @@ const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secre
 const filters: IGetPaymentList = { created_at: { value: '2021-01-27T13:58:02.977Z', mode: 'gte' },  limit: 20 };
 
 try {
-    const paymnetList = await checkout.getPaymentList(filters);
-    console.log(paymnetList)
+    const paymentList = await checkout.getPaymentList(filters);
+    console.log(paymentList)
 } catch (error) {
      console.error(err);
 }
 ```
-### Create refund
-```typescript
+### [Create refund](https://yookassa.ru/developers/api#create_refund)
+```javascript
 import { YooCheckout, ICreateRefund } from 'yoo-checkout';
 
 const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
@@ -231,8 +223,8 @@ try {
 }
 ```
 
-### Get refund
-```typescript
+### [Get refund](https://yookassa.ru/developers/api#get_refund)
+```javascript
 import { YooCheckout } from 'yoo-checkout';
 
 const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
@@ -247,8 +239,8 @@ try {
 }
 ```
 
-### Get refund list
-```typescript
+### [Get refund list](https://yookassa.ru/developers/api#get_refunds_list)
+```javascript
 import { YooCheckout, IGetRefundList } from 'yoo-checkout';
 
 const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
@@ -263,8 +255,8 @@ try {
 }
 ```
 
-### Create receipt
-```typescript
+### [Create receipt](https://yookassa.ru/developers/api#create_receipt)
+```javascript
 import { YooCheckout, ICreateReceipt } from 'yoo-checkout';
 
 const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
@@ -308,8 +300,8 @@ try {
 }
 ```
 
-### Get receipt
-```typescript
+### [Get receipt](https://yookassa.ru/developers/api#get_receipt)
+```javascript
 import { YooCheckout } from 'yoo-checkout';
 
 const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
@@ -324,8 +316,8 @@ try {
 }
 ```
 
-### Get receipt list
-```typescript
+### [Get receipt list](https://yookassa.ru/developers/api#get_receipts_list)
+```javascript
 import { YooCheckout, IGetReceiptList } from 'yoo-checkout';
 
 const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
@@ -333,8 +325,72 @@ const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secre
 const filters: IGetReceiptList = { created_at: { value: '2021-01-27T13:58:02.977Z', mode: 'gte' },  limit: 20 };
 
 try {
-    const receiptist = await checkout.getReceiptList(filters);
-    console.log(receiptist)
+    const receiptList = await checkout.getReceiptList(filters);
+    console.log(receiptList)
+} catch (error) {
+     console.error(err);
+}
+```
+
+#### The following functionality works only as part of an [affiliate program](https://yookassa.ru/developers/partners-api/basics)
+
+### [Create webhook](https://yookassa.ru/developers/api#create_webhook)
+```javascript
+import { YooCheckout, ICreateWebHook } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey', token: 'your_OAuth_token' });
+
+const idempotenceKey = '02347fc4-a1f0-49db-807e-f0d67c2ed5a5';
+const createWebHookPayload: ICreateWebHook = {
+    event: 'payment.canceled',
+    url: 'https://test.com/hook'
+};
+
+try {
+    const webhook = await checkout.createWebHook(createWebHookPayload, idempotenceKey);
+    console.log(webhook)
+} catch (error) {
+     console.error(err);
+}
+```
+
+### [Get webhook list](https://yookassa.ru/developers/api#get_webhook_list)
+```javascript
+import { YooCheckout } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey', token: 'your_OAuth_token' });
+try {
+    const webHookList = await checkout.getWebHookList();
+    console.log(webHookList)
+} catch (error) {
+     console.error(err);
+}
+```
+
+### [Delete webhook](https://yookassa.ru/developers/api#delete_webhook)
+```javascript
+import { YooCheckout, ICreateWebHook } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey', token: 'your_OAuth_token' });
+
+const webHookId = 'wh-edba6d49-ce3e-4d99-991b-4bb164859dc3';
+
+try {
+    await checkout.deleteWebHook(webHookId);
+} catch (error) {
+     console.error(err);
+}
+```
+
+### [Get shop info](https://yookassa.ru/developers/api#get_me)
+```javascript
+import { YooCheckout, ICreateWebHook } from 'yoo-checkout';
+
+const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey', token: 'your_OAuth_token' });
+
+try {
+   const shop = await checkout.getShop();
+   console.log(shop)
 } catch (error) {
      console.error(err);
 }

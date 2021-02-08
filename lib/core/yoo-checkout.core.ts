@@ -8,7 +8,11 @@ import {
     Receipt,
     receiptFactory,
     Refund,
-    refundFactory
+    refundFactory,
+    WebHook,
+    webhookFactory,
+    Me,
+    meFactory
 } from '../models';
 import {
     ICapturePayment,
@@ -21,7 +25,9 @@ import {
     IYooCheckoutOptions,
     IRefundList,
     IReceiptList,
-    IGetReceiptList
+    IGetReceiptList,
+    ICreateWebHook,
+    IWebHookList
 } from '../types';
 import { apiUrl } from '.';
 const DEFAUL = {
@@ -392,4 +398,151 @@ export class YooCheckout {
                 });
         });
     }
+    /**
+     * Create webhook
+     * @see 'https://yookassa.ru/developers/api#create_webhook
+     * @param {Object} payload
+     * @paramExample
+     * {
+     *  "event": "payment.canceled",
+     *  "url": "https://test.com/hook"
+     * }
+     * @param {string} idempotenceKey
+     * @paramExample '6daac9fa-342d-4264-91c5-b5eafd1a0010'
+     * @returns {Promise<Object>}
+     */
+    public createWebHook(payload: ICreateWebHook, idempotenceKey: string = uuid()): Promise<WebHook> {
+        return new Promise((resolve, reject) => {
+            if (!this.options.token) {
+                console.error('Web hook functionality is only available with an OAuth token');
+                reject(errorFactory({
+                    id: uuid(),
+                    code: 'Internal error',
+                    errorCode: 500,
+                    description: 'Web hook functionality is only available with an OAuth token',
+                    parameter: 'Authorization',
+                    type: 'Internal'
+                }));
+                return;
+            }
+            axios.post(`${this.root}/webhooks`, payload, {
+                headers: {
+                    'Idempotence-Key': idempotenceKey,
+                    'Authorization': `Bearer ${this.options.token}`
+                }
+            }).then(res => {
+                resolve(webhookFactory(res.data));
+            }).catch((error) => {
+                const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
+                console.error(err);
+                reject(err);
+            });
+        });
+    }
+
+    /**
+     * Get webhook list
+     * @see 'https://yookassa.ru/developers/api#get_webhook_list'
+     * @returns {Promise<Object>}
+     */
+    public getWebHookList(): Promise<IWebHookList> {
+        return new Promise((resolve, reject) => {
+            if (!this.options.token) {
+                console.error('Web hook functionality is only available with an OAuth token');
+                reject(errorFactory({
+                    id: uuid(),
+                    code: 'Internal error',
+                    errorCode: 500,
+                    description: 'Web hook functionality is only available with an OAuth token',
+                    parameter: 'Authorization',
+                    type: 'Internal'
+                }));
+                return;
+            }
+            axios.get(`${this.root}/webhooks`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${this.options.token}`
+                    }
+                }).then(res => {
+                    const response = { ...res.data };
+                    response.items = response.items.map((i: any) => webhookFactory(i));
+                    resolve(response);
+                }).catch((error) => {
+                    const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
+                    console.error(err);
+                    reject(err);
+                });
+        });
+    }
+    /**
+     * Create webhook
+     * @see 'https://yookassa.ru/developers/api#create_webhook
+     * @param {string} id
+     * @paramExample
+     * wh-edba6d49-ce3e-4d99-991b-4bb164859dc3
+     * @returns {Promise<Object>}
+     */
+    public deleteWebHook(id: string): Promise<{}> {
+        return new Promise((resolve, reject) => {
+            if (!this.options.token) {
+                console.error('Web hook functionality is only available with an OAuth token');
+                reject(errorFactory({
+                    id: uuid(),
+                    code: 'Internal error',
+                    errorCode: 500,
+                    description: 'Web hook functionality is only available with an OAuth token',
+                    parameter: 'Authorization',
+                    type: 'Internal'
+                }));
+                return;
+            }
+            axios.delete(`${this.root}/webhooks/${id}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${this.options.token}`
+                    }
+                }).then(() => {
+                    resolve({});
+                }).catch((error) => {
+                    const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
+                    console.error(err);
+                    reject(err);
+                });
+        });
+    }
+    /**
+     * Get shop info
+     * @see 'https://yookassa.ru/developers/api#get_me'
+     * @returns {Promise<Object>}
+     */
+    public getShop(): Promise<Me> {
+        return new Promise((resolve, reject) => {
+            if (!this.options.token) {
+                console.error('Shop information is only available with an OAuth token');
+                reject(errorFactory({
+                    id: uuid(),
+                    code: 'Internal error',
+                    errorCode: 500,
+                    description: 'Shop information is only available with an OAuth token',
+                    parameter: 'Authorization',
+                    type: 'Internal'
+                }));
+                return;
+            }
+            axios.get(`${this.root}/me`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${this.options.token}`
+                    }
+                }).then((res) => {
+                    resolve(meFactory(res.data));
+                }).catch((error) => {
+                    const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
+                    console.error(err);
+                    reject(err);
+                });
+        });
+    }
+
 }
