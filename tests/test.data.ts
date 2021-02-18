@@ -1,3 +1,4 @@
+import { PaymentStatuses, ReceiptStatuses, RefundStatuses } from '../lib/core';
 import { ICreatePayment, ICreateReceipt, ICreateRefund, ICreateWebHook } from '../lib/types';
 
 export const createPaymentData: ICreatePayment = {
@@ -16,7 +17,7 @@ export const createPaymentData: ICreatePayment = {
 
 export const createPaymentResponse = {
     id: '219752e2-000f-50bf-b000-03f3dda898c8',
-    status: 'waiting_for_capture',
+    status: PaymentStatuses.waiting_for_capture,
     paid: true,
     amount: { value: '2.00', currency: 'RUB' },
     confirmation:
@@ -24,7 +25,7 @@ export const createPaymentResponse = {
         type: 'redirect',
         return_url: 'https://www.merchant-website.com/return_url',
         confirmation_url:
-            'https://money.yandex.ru/payments/kassa/confirmation?orderId=219752e2-000f-50bf-b000-03f3dda898c8',
+            'https://api.yookassa.ru/v3/payments/kassa/confirmation?orderId=219752e2-000f-50bf-b000-03f3dda898c8',
     },
     created_at: '2017-11-10T05:54:42.563Z',
     metadata: {},
@@ -39,7 +40,7 @@ export const createPaymentResponse = {
 
 export const getPaymentResponse = {
     id: '219752e2-000f-50bf-b000-03f3dda898c8',
-    status: 'waiting_for_capture',
+    status: PaymentStatuses.waiting_for_capture,
     paid: false,
     amount: { value: '2.00', currency: 'RUB' },
     created_at: '2017-11-10T05:54:42.563Z',
@@ -55,7 +56,7 @@ export const getPaymentResponse = {
 
 export const capturePaymentResponse = {
     id: '219752e2-000f-50bf-b000-03f3dda898c8',
-    status: 'succeeded',
+    status: PaymentStatuses.succeeded,
     paid: true,
     amount: {
         value: '2.00',
@@ -74,7 +75,7 @@ export const capturePaymentResponse = {
 
 export const cancelPaymentResponse = {
     id: '219752e2-000f-50bf-b000-03f3dda898c8',
-    status: 'canceled',
+    status: PaymentStatuses.canceled,
     paid: true,
     amount: {
         value: '2.00',
@@ -109,7 +110,7 @@ export const createRefundData: ICreateRefund = {
 
 export const createAndGetRefundResponse = {
     id: '219752e2-000f-50bf-b000-03f3dda898c8',
-    status: 'succeeded',
+    status: RefundStatuses.succeeded,
     amount: {
         value: '1',
         currency: 'RUB',
@@ -163,7 +164,7 @@ export const createReceiptResponse = {
     id: 'rt_1da5c87d-0984-50e8-a7f3-8de646dd9ec9',
     type: 'refund',
     refund_id: createReceiptData.refund_id,
-    status: 'succeeded',
+    status: ReceiptStatuses.succeeded,
     items: [
         {
             description: 'Наименование товара 1',
@@ -193,7 +194,7 @@ export const createReceiptResponse = {
 export const getReceiptResponse = {
     id: 'rt-2da5c87d-0384-50e8-a7f3-8d5646dd9e10',
     type: 'payment',
-    status: 'succeeded',
+    status: ReceiptStatuses.succeeded,
     payment_id: '219752e2-000f-50bf-b000-03f3dda898c8',
     fiscal_document_number: '3997',
     fiscal_storage_number: '9288000100115786',
@@ -259,4 +260,4 @@ export const getShopInfoResponse = {
     fiscalization_enabled: false,
     payment_methods: [ 'yoo_money', 'bank_card' ],
     status: 'enabled'
-}
+};

@@ -39,7 +39,7 @@ export * from './IGetReceiptList';
 export * from './IReceiptList';
 export * from './ICreateWebHook';
 export * from './IWebHookList';
-
+export * from './IWebHookEvent';
 
 
 

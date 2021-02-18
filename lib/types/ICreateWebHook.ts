@@ -1,4 +1,6 @@
+import { IWebHookEvent } from "./IWebHookEvent";
+
 export interface ICreateWebHook {
-    event: 'payment.waiting_for_capture' | 'payment.succeeded' | 'payment.canceled' | 'refund.succeeded';
+    event: IWebHookEvent;
     url: string;
 }

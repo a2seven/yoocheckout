@@ -2,7 +2,6 @@ import axios from 'axios';
 import { v4 as uuid } from 'uuid';
 import {
     errorFactory,
-    ErrorResponse,
     Payment,
     paymentFactory,
     Receipt,
@@ -29,39 +28,38 @@ import {
     ICreateWebHook,
     IWebHookList
 } from '../types';
-import { apiUrl } from '.';
-const DEFAUL = {
-    PACKAGE_VERSION: '1',
-    DEFAULT_DEBUG: false,
-    // tslint:disable-next-line: no-require-imports
-};
+import { apiUrl, DEFAULT } from '.';
 
 export class YooCheckout {
-    public shopId: string;
-    public secretKey: string;
-    public root: string;
-    public debug: boolean;
+    public readonly shopId: string;
+    public readonly secretKey: string;
+    public readonly root: string;
+    public readonly debug: boolean;
     constructor(private readonly options: IYooCheckoutOptions) {
         this.shopId = this.options.shopId;
         this.secretKey = this.options.secretKey;
-        this.debug = options.debug || DEFAUL.DEFAULT_DEBUG;
+        this.debug = options.debug || DEFAULT.DEFAULT_DEBUG;
         this.root = apiUrl;
+    }
+
+    private authData() {
+        return {
+            username: this.shopId,
+            password: this.secretKey,
+        };
     }
 
     private buildQuery(filters: IGetPaymentList | IGetRefundList | IGetReceiptList): string {
         let queryString = '?';
-        // tslint:disable-next-line: forin
-        for (const key in filters) {
-            const filter = (filters as any)[key];
-            if (queryString !== '?') {
-                queryString = `${queryString}&`;
-            }
-            if (filter['value'] && filter['mode']) {
-                queryString = `${queryString}${key}.${filter['mode']}=${filter['value']}`;
+        const entries = Object.entries(filters);
+        entries.forEach((filter, index) => {
+            const [param, value] = filter;
+            if (value['value'] && value['mode']) {
+                queryString = `${queryString}${param}.${value['mode']}=${value['value']}${index < entries.length - 1 ? '&' : ''}`;
             } else {
-                queryString = `${queryString}${key}=${filter}`;
+                queryString = `${queryString}${param}=${value}${index < entries.length - 1 ? '&' : ''}`;
             }
-        }
+        });
         return queryString === '?' ? '' : queryString;
     }
 
@@ -79,24 +77,14 @@ export class YooCheckout {
      * @paramExample '6daac9fa-342d-4264-91c5-b5eafd1a0010'
      * @returns {Promise<Payment>}
      */
-    public createPayment(payload: ICreatePayment, idempotenceKey: string = uuid()): Promise<Payment> {
-        return new Promise((resolve, reject) => {
-            axios.post(`${this.root}/payments`, payload, {
-                auth: {
-                    username: this.shopId,
-                    password: this.secretKey,
-                },
-                headers: {
-                    'Idempotence-Key': idempotenceKey,
-                }
-            }).then(res => {
-                resolve(paymentFactory(res.data));
-            }).catch((error) => {
-                const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                console.error(err);
-                reject(err);
-            });
-        });
+    public async createPayment(payload: ICreatePayment, idempotenceKey: string = uuid()): Promise<Payment> {
+        try {
+            const options = { auth: this.authData(), headers: { 'Idempotence-Key': idempotenceKey } };
+            const { data } = await axios.post(`${this.root}/payments`, payload, options);
+            return paymentFactory(data);
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
 
     /**
@@ -106,21 +94,14 @@ export class YooCheckout {
      * @paramExample '215d8da0-000f-50be-b000-0003308c89be'
      * @returns {Promise<Payment>}
      */
-    public getPayment(paymentId: string): Promise<Payment> {
-        return new Promise((resolve, reject) => {
-            axios.get(`${this.root}/payments/${paymentId}`,
-                {
-                    auth: {
-                        username: this.shopId,
-                        password: this.secretKey,
-                    }
-                }).then(res => {
-                    resolve(paymentFactory(res.data));
-                }).catch((error) => {
-                    const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                    reject(err);
-                });
-        });
+    public async getPayment(paymentId: string): Promise<Payment> {
+        try {
+            const options = { auth: this.authData() };
+            const { data } = await axios.get(`${this.root}/payments/${paymentId}`, options);
+            return paymentFactory(data);
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
 
     /**
@@ -137,24 +118,14 @@ export class YooCheckout {
      * @paramExample '6daac9fa-342d-4264-91c5-b5eafd1a0010'
      * @returns {Promise<Payment>}
      */
-    public capturePayment(paymentId: string, payload: ICapturePayment, idempotenceKey: string = uuid()): Promise<Payment> {
-        return new Promise((resolve, reject) => {
-            axios.post(`${this.root}/payments/${paymentId}/capture`, payload, {
-                auth: {
-                    username: this.shopId,
-                    password: this.secretKey,
-                },
-                headers: {
-                    'Idempotence-Key': idempotenceKey,
-                }
-            }).then(res => {
-                resolve(paymentFactory(res.data));
-            }).catch((error) => {
-                const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                console.error(err);
-                reject(err);
-            });
-        });
+    public async capturePayment(paymentId: string, payload: ICapturePayment, idempotenceKey: string = uuid()): Promise<Payment> {
+        try {
+            const options = { auth: this.authData(), headers: { 'Idempotence-Key': idempotenceKey } };
+            const { data } = await axios.post(`${this.root}/payments/${paymentId}/capture`, payload, options);
+            return paymentFactory(data);
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
 
     /**
@@ -166,24 +137,14 @@ export class YooCheckout {
      * @paramExample '6daac9fa-342d-4264-91c5-b5eafd1a0010'
      * @returns {Promise<Payment>}
      */
-    public cancelPayment(paymentId: string, idempotenceKey: string = uuid()): Promise<Payment> {
-        return new Promise((resolve, reject) => {
-            axios.post(`${this.root}/payments/${paymentId}/cancel`, {}, {
-                auth: {
-                    username: this.shopId,
-                    password: this.secretKey,
-                },
-                headers: {
-                    'Idempotence-Key': idempotenceKey,
-                }
-            }).then(res => {
-                resolve(paymentFactory(res.data));
-            }).catch((error) => {
-                const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                console.error(err);
-                reject(err);
-            });
-        });
+    public async cancelPayment(paymentId: string, idempotenceKey: string = uuid()): Promise<Payment> {
+        try {
+            const options = { auth: this.authData(), headers: { 'Idempotence-Key': idempotenceKey } };
+            const { data } = await axios.post(`${this.root}/payments/${paymentId}/cancel`, {}, options);
+            return paymentFactory(data);
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
 
     /**
@@ -197,24 +158,14 @@ export class YooCheckout {
      * }
      * @returns {Promise<Object>}
      */
-    public getPaymentList(filters: IGetPaymentList = {}): Promise<IPaymentList> {
-        return new Promise((resolve, reject) => {
-            axios.get(`${this.root}/payments${this.buildQuery(filters)}`,
-                {
-                    auth: {
-                        username: this.shopId,
-                        password: this.secretKey,
-                    }
-                }).then(res => {
-                    const response = { ...res.data };
-                    response.items = response.items.map((i: any) => paymentFactory(i));
-                    resolve(response);
-                }).catch((error) => {
-                    const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                    console.error(err);
-                    reject(err);
-                });
-        });
+    public async getPaymentList(filters: IGetPaymentList = {}): Promise<IPaymentList> {
+        try {
+            const options = { auth: this.authData() };
+            const { data } = await axios.get(`${this.root}/payments${this.buildQuery(filters)}`, options);
+            return data.items.map((i: any) => paymentFactory(i));
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
 
     /**
@@ -230,24 +181,14 @@ export class YooCheckout {
      * @paramExample '6daac9fa-342d-4264-91c5-b5eafd1a0010'
      * @returns {Promise<Refund>}
      */
-    public createRefund(payload: ICreateRefund, idempotenceKey: string = uuid()): Promise<Refund> {
-        return new Promise((resolve, reject) => {
-            axios.post(`${this.root}/refunds`, payload, {
-                auth: {
-                    username: this.shopId,
-                    password: this.secretKey,
-                },
-                headers: {
-                    'Idempotence-Key': idempotenceKey,
-                }
-            }).then(res => {
-                resolve(refundFactory(res.data));
-            }).catch((error) => {
-                const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                console.error(err);
-                reject(err);
-            });
-        });
+    public async createRefund(payload: ICreateRefund, idempotenceKey: string = uuid()): Promise<Refund> {
+        try {
+            const options = { auth: this.authData(), headers: { 'Idempotence-Key': idempotenceKey } };
+            const { data } = await axios.post(`${this.root}/refunds`, payload, options);
+            return refundFactory(data);
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
 
     /**
@@ -257,22 +198,14 @@ export class YooCheckout {
      * @paramExample '216749f7-0016-50be-b000-078d43a63ae4'
      * @returns {Promise<Refund>}
      */
-    public getRefund(refundId: string): Promise<Refund> {
-        return new Promise((resolve, reject) => {
-            axios.get(`${this.root}/refunds/${refundId}`,
-                {
-                    auth: {
-                        username: this.shopId,
-                        password: this.secretKey,
-                    }
-                }).then(res => {
-                    resolve(refundFactory(res.data));
-                }).catch((error) => {
-                    const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                    console.error(err);
-                    reject(err);
-                });
-        });
+    public async getRefund(refundId: string): Promise<Refund> {
+        try {
+            const options = { auth: this.authData() };
+            const { data } = await axios.get(`${this.root}/refunds/${refundId}`, options);
+            return refundFactory(data);
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
 
     /**
@@ -286,24 +219,14 @@ export class YooCheckout {
      * }
      * @returns {Promise<Object>}
      */
-    public getRefundList(filters: IGetRefundList = {}): Promise<IRefundList> {
-        return new Promise((resolve, reject) => {
-            axios.get(`${this.root}/refunds${this.buildQuery(filters)}`,
-                {
-                    auth: {
-                        username: this.shopId,
-                        password: this.secretKey,
-                    }
-                }).then(res => {
-                    const response = { ...res.data };
-                    response.items = response.items.map((i: any) => refundFactory(i));
-                    resolve(response);
-                }).catch((error) => {
-                    const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                    console.error(err);
-                    reject(err);
-                });
-        });
+    public async getRefundList(filters: IGetRefundList = {}): Promise<IRefundList> {
+        try {
+            const options = { auth: this.authData() };
+            const { data } = await axios.get(`${this.root}/refunds${this.buildQuery(filters)}`, options);
+            return data.items.map((i: any) => paymentFactory(i));
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
 
     /**
@@ -323,24 +246,14 @@ export class YooCheckout {
      * @paramExample '6daac9fa-342d-4264-91c5-b5eafd1a0010'
      * @returns {Promise<Receipt>}
      */
-    public createReceipt(payload: ICreateReceipt, idempotenceKey: string = uuid()): Promise<Receipt> {
-        return new Promise((resolve, reject) => {
-            axios.post(`${this.root}/receipts`, payload, {
-                auth: {
-                    username: this.shopId,
-                    password: this.secretKey,
-                },
-                headers: {
-                    'Idempotence-Key': idempotenceKey,
-                }
-            }).then(res => {
-                resolve(receiptFactory(res.data));
-            }).catch((error) => {
-                const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                console.error(err);
-                reject(err);
-            });
-        });
+    public async createReceipt(payload: ICreateReceipt, idempotenceKey: string = uuid()): Promise<Receipt> {
+        try {
+            const options = { auth: this.authData(), headers: { 'Idempotence-Key': idempotenceKey } };
+            const { data } = await axios.post(`${this.root}/receipts`, payload, options);
+            return receiptFactory(data);
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
 
     /**
@@ -350,22 +263,14 @@ export class YooCheckout {
      * @paramExample '216749f7-0016-50be-b000-078d43a63ae4'
      * @returns {Promise<Receipt>}
      */
-    public getReceipt(receiptId: string): Promise<Receipt> {
-        return new Promise((resolve, reject) => {
-            axios.get(`${this.root}/receipts/${receiptId}`,
-                {
-                    auth: {
-                        username: this.shopId,
-                        password: this.secretKey,
-                    }
-                }).then(res => {
-                    resolve(receiptFactory(res.data));
-                }).catch((error) => {
-                    const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                    console.error(err);
-                    reject(err);
-                });
-        });
+    public async getReceipt(receiptId: string): Promise<Receipt> {
+        try {
+            const options = { auth: this.authData() };
+            const { data } = await axios.get(`${this.root}/receipts/${receiptId}`, options);
+            return receiptFactory(data);
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
 
     /**
@@ -379,24 +284,14 @@ export class YooCheckout {
      * }
      * @returns {Promise<Object>}
      */
-    public getReceiptList(filters: IGetReceiptList = {}): Promise<IReceiptList> {
-        return new Promise((resolve, reject) => {
-            axios.get(`${this.root}/receipts${this.buildQuery(filters)}`,
-                {
-                    auth: {
-                        username: this.shopId,
-                        password: this.secretKey,
-                    }
-                }).then(res => {
-                    const response = { ...res.data };
-                    response.items = response.items.map((i: any) => receiptFactory(i));
-                    resolve(response);
-                }).catch((error) => {
-                    const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                    console.error(err);
-                    reject(err);
-                });
-        });
+    public async getReceiptList(filters: IGetReceiptList = {}): Promise<IReceiptList> {
+        try {
+            const options = { auth: this.authData() };
+            const { data } = await axios.get(`${this.root}/receipts${this.buildQuery(filters)}`, options);
+            return data.items.map((i: any) => receiptFactory(i));
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
     /**
      * Create webhook
@@ -411,33 +306,24 @@ export class YooCheckout {
      * @paramExample '6daac9fa-342d-4264-91c5-b5eafd1a0010'
      * @returns {Promise<Object>}
      */
-    public createWebHook(payload: ICreateWebHook, idempotenceKey: string = uuid()): Promise<WebHook> {
-        return new Promise((resolve, reject) => {
+    public async createWebHook(payload: ICreateWebHook, idempotenceKey: string = uuid()): Promise<WebHook> {
+        try {
             if (!this.options.token) {
-                console.error('Web hook functionality is only available with an OAuth token');
-                reject(errorFactory({
+                throw errorFactory({
                     id: uuid(),
                     code: 'Internal error',
                     errorCode: 500,
                     description: 'Web hook functionality is only available with an OAuth token',
                     parameter: 'Authorization',
                     type: 'Internal'
-                }));
-                return;
+                });
             }
-            axios.post(`${this.root}/webhooks`, payload, {
-                headers: {
-                    'Idempotence-Key': idempotenceKey,
-                    'Authorization': `Bearer ${this.options.token}`
-                }
-            }).then(res => {
-                resolve(webhookFactory(res.data));
-            }).catch((error) => {
-                const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                console.error(err);
-                reject(err);
-            });
-        });
+            const options = { headers: { 'Idempotence-Key': idempotenceKey, 'Authorization': `Bearer ${this.options.token}` } };
+            const { data } = await axios.post(`${this.root}/webhooks`, payload, options);
+            return webhookFactory(data);
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
 
     /**
@@ -445,104 +331,75 @@ export class YooCheckout {
      * @see 'https://yookassa.ru/developers/api#get_webhook_list'
      * @returns {Promise<Object>}
      */
-    public getWebHookList(): Promise<IWebHookList> {
-        return new Promise((resolve, reject) => {
+    public async getWebHookList(): Promise<IWebHookList> {
+        try {
             if (!this.options.token) {
-                console.error('Web hook functionality is only available with an OAuth token');
-                reject(errorFactory({
+                throw errorFactory({
                     id: uuid(),
                     code: 'Internal error',
                     errorCode: 500,
                     description: 'Web hook functionality is only available with an OAuth token',
                     parameter: 'Authorization',
                     type: 'Internal'
-                }));
-                return;
-            }
-            axios.get(`${this.root}/webhooks`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${this.options.token}`
-                    }
-                }).then(res => {
-                    const response = { ...res.data };
-                    response.items = response.items.map((i: any) => webhookFactory(i));
-                    resolve(response);
-                }).catch((error) => {
-                    const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                    console.error(err);
-                    reject(err);
                 });
-        });
+            }
+            const options = { headers: { 'Authorization': `Bearer ${this.options.token}` } };
+            const { data } = await axios.get(`${this.root}/webhooks`, options);
+            return data.items.map((i: any) => webhookFactory(i));
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
     /**
-     * Create webhook
-     * @see 'https://yookassa.ru/developers/api#create_webhook
+     * Delete webhook
+     * @see 'https://yookassa.ru/developers/api#delete_webhook
      * @param {string} id
      * @paramExample
      * wh-edba6d49-ce3e-4d99-991b-4bb164859dc3
      * @returns {Promise<Object>}
      */
-    public deleteWebHook(id: string): Promise<{}> {
-        return new Promise((resolve, reject) => {
+    public async deleteWebHook(id: string): Promise<{}> {
+        try {
             if (!this.options.token) {
-                console.error('Web hook functionality is only available with an OAuth token');
-                reject(errorFactory({
+                throw errorFactory({
                     id: uuid(),
                     code: 'Internal error',
                     errorCode: 500,
                     description: 'Web hook functionality is only available with an OAuth token',
                     parameter: 'Authorization',
                     type: 'Internal'
-                }));
-                return;
-            }
-            axios.delete(`${this.root}/webhooks/${id}`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${this.options.token}`
-                    }
-                }).then(() => {
-                    resolve({});
-                }).catch((error) => {
-                    const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                    console.error(err);
-                    reject(err);
                 });
-        });
+            }
+            const options = { headers: { 'Authorization': `Bearer ${this.options.token}` } };
+            await axios.delete(`${this.root}/webhooks/${id}`, options);
+            return {};
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
     /**
      * Get shop info
      * @see 'https://yookassa.ru/developers/api#get_me'
      * @returns {Promise<Object>}
      */
-    public getShop(): Promise<Me> {
-        return new Promise((resolve, reject) => {
+    public async getShop(): Promise<Me> {
+        try {
             if (!this.options.token) {
-                console.error('Shop information is only available with an OAuth token');
-                reject(errorFactory({
+                throw errorFactory({
                     id: uuid(),
                     code: 'Internal error',
                     errorCode: 500,
                     description: 'Shop information is only available with an OAuth token',
                     parameter: 'Authorization',
                     type: 'Internal'
-                }));
-                return;
-            }
-            axios.get(`${this.root}/me`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${this.options.token}`
-                    }
-                }).then((res) => {
-                    resolve(meFactory(res.data));
-                }).catch((error) => {
-                    const err: ErrorResponse = errorFactory({ ...error.response.data, errorCode: error.response.status });
-                    console.error(err);
-                    reject(err);
                 });
-        });
+            }
+            const options = { headers: { 'Authorization': `Bearer ${this.options.token}` } };
+            const { data } = await axios.get(`${this.root}/me`, options);
+            return meFactory(data);
+        } catch (error) {
+            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+        }
     }
 
 }

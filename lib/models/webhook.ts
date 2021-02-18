@@ -1,6 +1,8 @@
+import { IWebHookEvent } from "../types";
+
 export class WebHook {
     id!: string;
-    event!: 'payment.waiting_for_capture' | 'payment.succeeded' | 'payment.canceled' | 'refund.succeeded';
+    event!: IWebHookEvent;
     url!: string;
 }
 
