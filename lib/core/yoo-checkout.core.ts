@@ -50,16 +50,13 @@ export class YooCheckout {
     }
 
     private buildQuery(filters: IGetPaymentList | IGetRefundList | IGetReceiptList): string {
-        let queryString = '?';
         const entries = Object.entries(filters);
-        entries.forEach((filter, index) => {
-            const [param, value] = filter;
-            if (value['value'] && value['mode']) {
-                queryString = `${queryString}${param}.${value['mode']}=${value['value']}${index < entries.length - 1 ? '&' : ''}`;
-            } else {
-                queryString = `${queryString}${param}=${value}${index < entries.length - 1 ? '&' : ''}`;
-            }
-        });
+        const queryString = entries.reduce((sum, [param, value], index) => (
+            value['value'] && value['mode']
+                ? `${sum}${param}.${value['mode']}=${value['value']}${index < entries.length - 1 ? '&' : ''}`
+                : `${sum}${param}=${value}${index < entries.length - 1 ? '&' : ''}`
+        ), '?');
+
         return queryString === '?' ? '' : queryString;
     }
 
