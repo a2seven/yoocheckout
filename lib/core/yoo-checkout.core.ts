@@ -345,7 +345,7 @@ export class YooCheckout {
             }
             const options = { headers: { 'Authorization': `Bearer ${this.options.token}` } };
             const { data } = await axios.get(`${this.root}/webhooks`, options);
-            data.items = data.items.map((i: any) => webhookFactory(i))
+            data.items = data.items.map((i: any) => webhookFactory(i));
             return data;
         } catch (error) {
             throw errorFactory({ ...error.response.data, errorCode: error.response.status });
