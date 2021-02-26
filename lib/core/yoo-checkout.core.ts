@@ -61,6 +61,14 @@ export class YooCheckout {
         return queryString === '?' ? '' : queryString;
     }
 
+    private normalizeFilter(filters: any) {
+        if(!Boolean(filters)) {
+            return {};
+        }
+
+        return {...filters};
+    }
+
     /**
      * Create payment
      * @see 'https://yookassa.ru/developers/api#create_payment'
@@ -81,7 +89,7 @@ export class YooCheckout {
             const { data } = await axios.post(`${this.root}/payments`, payload, options);
             return paymentFactory(data);
         } catch (error) {
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
 
@@ -98,7 +106,7 @@ export class YooCheckout {
             const { data } = await axios.get(`${this.root}/payments/${paymentId}`, options);
             return paymentFactory(data);
         } catch (error) {
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
 
@@ -122,7 +130,7 @@ export class YooCheckout {
             const { data } = await axios.post(`${this.root}/payments/${paymentId}/capture`, payload, options);
             return paymentFactory(data);
         } catch (error) {
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
 
@@ -141,7 +149,7 @@ export class YooCheckout {
             const { data } = await axios.post(`${this.root}/payments/${paymentId}/cancel`, {}, options);
             return paymentFactory(data);
         } catch (error) {
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
 
@@ -157,13 +165,14 @@ export class YooCheckout {
      * @returns {Promise<Object>}
      */
     public async getPaymentList(filters: IGetPaymentList = {}): Promise<IPaymentList> {
+        const f = this.normalizeFilter(filters);
         try {
             const options = { auth: this.authData() };
-            const { data } = await axios.get(`${this.root}/payments${this.buildQuery(filters)}`, options);
+            const { data } = await axios.get(`${this.root}/payments${this.buildQuery(f)}`, options);
             data.items = data.items.map((i: any) => paymentFactory(i));
             return data;
         } catch (error) {
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
 
@@ -186,7 +195,7 @@ export class YooCheckout {
             const { data } = await axios.post(`${this.root}/refunds`, payload, options);
             return refundFactory(data);
         } catch (error) {
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
 
@@ -203,7 +212,7 @@ export class YooCheckout {
             const { data } = await axios.get(`${this.root}/refunds/${refundId}`, options);
             return refundFactory(data);
         } catch (error) {
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
 
@@ -219,13 +228,14 @@ export class YooCheckout {
      * @returns {Promise<Object>}
      */
     public async getRefundList(filters: IGetRefundList = {}): Promise<IRefundList> {
+        const f = this.normalizeFilter(filters);
         try {
             const options = { auth: this.authData() };
-            const { data } = await axios.get(`${this.root}/refunds${this.buildQuery(filters)}`, options);
+            const { data } = await axios.get(`${this.root}/refunds${this.buildQuery(f)}`, options);
             data.items = data.items.map((i: any) => paymentFactory(i));
             return data;
         } catch (error) {
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
 
@@ -252,7 +262,7 @@ export class YooCheckout {
             const { data } = await axios.post(`${this.root}/receipts`, payload, options);
             return receiptFactory(data);
         } catch (error) {
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
 
@@ -269,7 +279,7 @@ export class YooCheckout {
             const { data } = await axios.get(`${this.root}/receipts/${receiptId}`, options);
             return receiptFactory(data);
         } catch (error) {
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
 
@@ -285,13 +295,14 @@ export class YooCheckout {
      * @returns {Promise<Object>}
      */
     public async getReceiptList(filters: IGetReceiptList = {}): Promise<IReceiptList> {
+        const f = this.normalizeFilter(filters);
         try {
             const options = { auth: this.authData() };
-            const { data } = await axios.get(`${this.root}/receipts${this.buildQuery(filters)}`, options);
+            const { data } = await axios.get(`${this.root}/receipts${this.buildQuery(f)}`, options);
             data.items = data.items.map((i: any) => receiptFactory(i));
             return data;
         } catch (error) {
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
     /**
@@ -326,7 +337,7 @@ export class YooCheckout {
             if(error instanceof ErrorResponse) {
                 throw error;
             }
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
 
@@ -355,7 +366,7 @@ export class YooCheckout {
             if(error instanceof ErrorResponse) {
                 throw error;
             }
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
     /**
@@ -385,7 +396,7 @@ export class YooCheckout {
             if(error instanceof ErrorResponse) {
                 throw error;
             }
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
     /**
@@ -412,7 +423,7 @@ export class YooCheckout {
             if(error instanceof ErrorResponse) {
                 throw error;
             }
-            throw errorFactory({ ...error.response.data, errorCode: error.response.status });
+            throw errorFactory(error);
         }
     }
 

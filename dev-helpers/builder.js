@@ -2,6 +2,50 @@ const { exec } = require("child_process");
 const fs = require('fs-extra');
 const { success, warning, info, error } = require('./console');
 
+const copy = (from, to) => {
+    return new Promise((resolve, reject) => {
+        fs.copy(from, to, err => {
+            if (err) {
+                error(`error: ${err.message || err}`);
+                reject(err)
+            }
+
+            resolve(true);
+        });
+    });
+}
+
+const removeFile = (path) => {
+    return new Promise((resolve, reject) => {
+        fs.remove(path, err => {
+            if (err) {
+                error(`error: ${err.message || err}`);
+                reject(err)
+            }
+
+            resolve(true);
+        });
+    });
+}
+
+const cmd = (command) => {
+    return new Promise((resolve, reject) => {
+        exec(command, (err, stdout, stderr) => {
+            if (err) {
+                error(`error: ${err.message}`);
+                reject(err);
+            }
+
+            if (stderr) {
+                warning(`WARNS: ${stderr}`);
+            }
+
+            info(`INFO: ${stdout}`);
+            resolve(true);
+        });
+    });
+}
+
 const commandManager = (args) => {
     const actions = {
         'update-v': () => {
@@ -40,37 +84,25 @@ const commandManager = (args) => {
     return;
 }
 
-const build = () => {
-    info('Start copy files.');
-    fs.copy('./lib', './npm_package/src/lib/', err => {
-        if (err) {
-            error(`error: ${err.message || err}`);
-            return;
-        }
+const build = async() => {
+    try {
+        info('Start copy files.');
+        await removeFile('./npm_package/package.json');
+        await copy('./lib', './npm_package/src/lib/');
+        await copy('./lib', './npm_package/src/lib/');
+        await copy('./README.md', './npm_package/README.md');
+        success('Copy files success.');
+        await copy('./npm_package/package.build.json', './npm_package/package.json');
+        info('Start compile files.');
+        await cmd("cd npm_package; npm i; npm run build");
 
-        fs.copy('./README.md', './npm_package/README.md', err => {
-            success('Copy files success.');
+        success('NPM compile finished!');
+        await removeFile('./npm_package/package.json');
+        await copy('./npm_package/package.prod.json', './npm_package/package.json');
+        process.exit(0);
+    } catch (err) {
 
-            info('Start compile files.');
-
-            exec("cd npm_package; npm i; npm run build", (err, stdout, stderr) => {
-                if (err) {
-                    error(`error: ${err.message}`);
-                    return;
-                }
-
-                if (stderr) {
-                    warning(`WARNS: ${stderr}`);
-                }
-
-                info(`INFO: ${stdout}`);
-
-                success('NPM compile finished!');
-                process.exit(0)
-            });
-        })
-
-    });
+    }
 }
 
 const updateV = (alpha = false) => {

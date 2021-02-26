@@ -97,7 +97,7 @@ npm install @a2seven/yoo-checkout
 ## Начало работы
  
 ```javascript
-import { YooCheckout } from '@a2seven/yoo-checkout'; // или const { YooCheckout } = require('you-checkout');
+import { YooCheckout } from '@a2seven/yoo-checkout'; // или const { YooCheckout } = require('@a2seven/yoo-checkout');
 
 const checkout = new YooCheckout({ shopId: 'your_shopId', secretKey: 'your_secretKey' });
 ```
