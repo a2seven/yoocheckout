@@ -11,7 +11,8 @@ import {
     WebHook,
     webhookFactory,
     Me,
-    meFactory
+    meFactory,
+    ErrorResponse
 } from '../models';
 import {
     ICapturePayment,
@@ -322,6 +323,9 @@ export class YooCheckout {
             const { data } = await axios.post(`${this.root}/webhooks`, payload, options);
             return webhookFactory(data);
         } catch (error) {
+            if(error instanceof ErrorResponse) {
+                throw error;
+            }
             throw errorFactory({ ...error.response.data, errorCode: error.response.status });
         }
     }
@@ -348,6 +352,9 @@ export class YooCheckout {
             data.items = data.items.map((i: any) => webhookFactory(i));
             return data;
         } catch (error) {
+            if(error instanceof ErrorResponse) {
+                throw error;
+            }
             throw errorFactory({ ...error.response.data, errorCode: error.response.status });
         }
     }
@@ -375,6 +382,9 @@ export class YooCheckout {
             await axios.delete(`${this.root}/webhooks/${id}`, options);
             return {};
         } catch (error) {
+            if(error instanceof ErrorResponse) {
+                throw error;
+            }
             throw errorFactory({ ...error.response.data, errorCode: error.response.status });
         }
     }
@@ -399,6 +409,9 @@ export class YooCheckout {
             const { data } = await axios.get(`${this.root}/me`, options);
             return meFactory(data);
         } catch (error) {
+            if(error instanceof ErrorResponse) {
+                throw error;
+            }
             throw errorFactory({ ...error.response.data, errorCode: error.response.status });
         }
     }
