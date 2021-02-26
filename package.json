@@ -3,7 +3,8 @@
         "serve": "npm run lint && tsc-watch -p tsconfig.json --onSuccess 'node build/index.js'",
         "build": "rm -rf build/* && npm run lint && tsc -p ./",
         "lint": "npx tslint --project tsconfig.json --config tslint.json",
-        "test:unit": "mocha -r ts-node/register tests/**/*.spec.ts"
+        "test:unit": "mocha -r ts-node/register tests/**/*.spec.ts",
+        "helper": "node dev-helpers/commands.js"
     },
     "devDependencies": {
         "@types/chai": "^4.2.14",
@@ -16,7 +17,8 @@
         "ts-node": "^9.1.1",
         "tsc-watch": "^4.2.9",
         "tslint": "^6.1.3",
-        "typescript": "^4.1.3"
+        "typescript": "^4.1.3",
+        "fs-extra": "^9.0.1"
     },
     "dependencies": {
         "@types/axios": "^0.14.0",
