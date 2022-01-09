@@ -18,7 +18,7 @@ export interface ICreatePayment {
     payment_method_data?: IPaymentMethodData;
     confirmation?: IConfirmationWithoutData;
     save_payment_method?: boolean;
-    capture?: string;
+    capture?: boolean;
     client_ip?: string;
     metadata?: any;
     airline?: IAirlineWithoutId;
