@@ -21,6 +21,7 @@
         "fs-extra": "^9.0.1"
     },
     "dependencies": {
+        "@lifeomic/attempt": "^3.0.3",
         "@types/axios": "^0.14.0",
         "axios": "^0.21.1",
         "uuid": "^8.3.2"

@@ -11,4 +11,10 @@ export interface ICreateRefund {
     description?: string;
     receipt?: IReceipt;
     sources?: ISource[];
+    deal?: {
+        refund_settlements: {
+            type: 'payout';
+            amount: IAmount;
+        }[];
+    };
 }

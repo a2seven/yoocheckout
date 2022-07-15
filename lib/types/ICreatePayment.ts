@@ -1,12 +1,13 @@
 import {
-    IAmount,
-    IReceipt,
-    IPaymentMethodData,
     IAirlineWithoutId,
-    IRecipientWithoutId,
+    IAmount,
     IConfirmationWithoutData,
-    ITransferWithoutStatus
-} from ".";
+    IPaymentDeal,
+    IPaymentMethodData,
+    IReceipt,
+    IRecipientWithoutId,
+    ITransferWithoutStatus,
+} from '.';
 
 export interface ICreatePayment {
     amount: IAmount;
@@ -23,4 +24,5 @@ export interface ICreatePayment {
     metadata?: any;
     airline?: IAirlineWithoutId;
     transfers?: ITransferWithoutStatus[];
+    deal?: IPaymentDeal;
 }
