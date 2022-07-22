@@ -7,6 +7,6 @@ export class ErrorResponse {
 }
 
 
-export const errorFactory = (payload: ICreateError): ErrorResponse => {
+export const errorFactory = (payload: ICreateError | unknown): ErrorResponse => {
     return Object.assign(new ErrorResponse(), payload);
 };
