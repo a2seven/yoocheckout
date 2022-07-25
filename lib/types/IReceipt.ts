@@ -4,6 +4,6 @@ export interface IReceipt {
     customer?: ICheckoutCustomer;
     items: IItemWithoutData[];
     tax_system_code?: number;
-    phone: string;
-    email: string;
+    phone?: string;
+    email?: string;
 }

@@ -6,7 +6,7 @@ import {
 } from ".";
 
 export interface ICapturePayment {
-    amount: IAmount;
+    amount?: IAmount;
     airline?: IAirlineWithoutId;
     transfers?: ITransferWithoutStatus[];
     receipt?: IReceipt;
