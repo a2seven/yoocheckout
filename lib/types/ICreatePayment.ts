@@ -23,4 +23,5 @@ export interface ICreatePayment {
     metadata?: any;
     airline?: IAirlineWithoutId;
     transfers?: ITransferWithoutStatus[];
+    merchant_customer_id?: string;
 }
