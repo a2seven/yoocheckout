@@ -78,6 +78,7 @@ export class Payment {
     };
     transfers!: ITransfer[];
     receipt!: IReceipt;
+    merchant_customer_id?: string;
     constructor() {
     }
 
