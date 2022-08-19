@@ -9,7 +9,8 @@ import {
     ITransfer,
     IConfirmation,
     IReceipt,
-    IRecipient
+    IRecipient,
+    IPaymentDeal,
 } from "../types";
 
 export class Payment {
@@ -78,6 +79,7 @@ export class Payment {
     };
     transfers!: ITransfer[];
     receipt!: IReceipt;
+    deal?: IPaymentDeal;
     constructor() {
     }
 
@@ -86,5 +88,3 @@ export class Payment {
 export const paymentFactory = (payload: any): Payment => {
     return Object.assign(new Payment(), payload);
 };
-
-

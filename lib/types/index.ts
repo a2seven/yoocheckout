@@ -1,4 +1,4 @@
-export * from './ICaupturePayment';
+export * from './ICapturePayment';
 export * from './ICreatePayment';
 export * from './ICreateReceipt';
 export * from './ICreateRefund';
@@ -40,14 +40,7 @@ export * from './IReceiptList';
 export * from './ICreateWebHook';
 export * from './IWebHookList';
 export * from './IWebHookEvent';
-
-
-
-
-
-
-
-
-
-
-
+export * from './IDealFeeMoment';
+export * from './IDealType';
+export * from './IPaymentDeal';
+export * from './ICreateDeal';
