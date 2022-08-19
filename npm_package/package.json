@@ -2,8 +2,8 @@
     "name": "@a2seven/yoo-checkout",
     "version": "1.1.0",
     "description": "Yoo.Checkout API v3",
-    "main": "lib/public-api.js",
-    "types": "lib/public-api.d.ts",
+    "main": "build/public-api.js",
+    "types": "build/public-api.d.ts",
     "keywords": [
         "Yandex.Checkout",
         "Yoo.Checkout",

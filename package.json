@@ -1,4 +1,33 @@
 {
+    "name": "@a2seven/yoo-checkout",
+    "version": "1.1.0",
+    "description": "Yoo.Checkout API v3",
+    "main": "build/public-api.js",
+    "types": "build/public-api.d.ts",
+    "files": [
+        "build"
+    ],
+    "keywords": [
+        "Yandex.Checkout",
+        "Yoo.Checkout",
+        "Yandex.Kassa",
+        "Yoo.Kassa",
+        "Юкаса",
+        "YooKass",
+        "Kassa",
+        "payment processing",
+        "credit cards",
+        "api"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/a2seven/yoocheckout.git"
+    },
+    "engines": {
+        "node": ">=12"
+    },
+    "author": "A2Seven <hello@a2seven.com> (https://a2seven.com/)",
+    "license": "MIT",
     "scripts": {
         "serve": "npm run lint && tsc-watch -p tsconfig.json --onSuccess 'node build/index.js'",
         "build": "rm -rf build/* && npm run lint && tsc -p ./",
@@ -24,5 +53,9 @@
         "@types/axios": "^0.14.0",
         "axios": "^0.21.1",
         "uuid": "^8.3.2"
-    }
+    },
+    "bugs": {
+        "url": "https://github.com/a2seven/yoocheckout/issues"
+    },
+    "homepage": "https://github.com/a2seven/yoocheckout#readme"
 }
