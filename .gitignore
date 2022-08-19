@@ -10,3 +10,4 @@ node_modules/
 build/
 npm_package/lib
 package-lock.json
+.idea/
