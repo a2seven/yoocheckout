@@ -9,6 +9,7 @@ export type IPaymentMethodType =
     'alfabank' |
     'tinkoff_bank' |
     'b2b_sberbank' |
+    'sbp' |
     'mobile_balance' |
     'cash' |
     'installments';
