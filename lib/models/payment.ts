@@ -9,7 +9,9 @@ import {
     ITransfer,
     IConfirmation,
     IReceipt,
-    IRecipient
+    IRecipient,
+    ICancellationParty,
+    ICancellationReason,
 } from "../types";
 
 export class Payment {
@@ -69,8 +71,8 @@ export class Payment {
     test!: boolean;
     receipt_registration!: IReceiptStatus;
     cancellation_details!: {
-        party: string;
-        reason: string;
+        party: ICancellationParty;
+        reason: ICancellationReason;
     };
     authorization_details!: {
         auth_code: string;

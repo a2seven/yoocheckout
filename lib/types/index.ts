@@ -40,6 +40,8 @@ export * from './IReceiptList';
 export * from './ICreateWebHook';
 export * from './IWebHookList';
 export * from './IWebHookEvent';
+export * from './ICancellationParty';
+export * from './ICancellationReason';
 
 
 
