@@ -2,7 +2,7 @@ export const apiUrl = 'https://api.yookassa.ru/v3';
 
 export const DEFAULT = {
     PACKAGE_VERSION: '1',
-    DEFAULT_DEBUG: false,
+    DEFAULT_DEBUG: false
     // tslint:disable-next-line: no-require-imports
 };
 
@@ -12,7 +12,6 @@ export enum PaymentStatuses {
     'succeeded' = 'succeeded',
     'canceled' = 'canceled'
 }
-
 
 export enum ReceiptStatuses {
     'pending' = 'pending',
@@ -28,6 +27,7 @@ export enum WebHookEvents {
 }
 
 export enum RefundStatuses {
+    'pending' = 'pending',
     'canceled' = 'canceled',
     'succeeded' = 'succeeded'
 }
